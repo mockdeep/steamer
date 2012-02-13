@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gamesList>
+	<steamID64>76561198003000123</steamID64>
+	<steamID>Bigby</steamID>
+	<games>
+		<game>
+			<appID>107100</appID>
+			<name>Bastion</name>
+			<logo>http://media.steampowered.com/steamcommunity/public/images/apps/107100/d113d66ef88069d7d35a74cfaf2e2ee917f61133.jpg</logo>
+			<storeLink>http://store.steampowered.com/app/107100</storeLink>
+			<hoursLast2Weeks>7.6</hoursLast2Weeks>
+			<hoursOnRecord>33.5</hoursOnRecord>
+			<statsLink>http://steamcommunity.com/id/lobati/stats/bastion</statsLink>
+			<globalStatsLink>http://steamcommunity.com/stats/bastion/achievements/</globalStatsLink>
+		</game>
+		<game>
+			<appID>10150</appID>
+			<name>Prototype</name>
+			<logo>http://media.steampowered.com/steamcommunity/public/images/apps/10150/5bfed786b34d71ee47edf9a40cb8d5e4413abb28.jpg</logo>
+			<storeLink>http://store.steampowered.com/app/10150</storeLink>
+			<hoursLast2Weeks>7.2</hoursLast2Weeks>
+			<hoursOnRecord>18.2</hoursOnRecord>
+		</game>
+		<game>
+			<appID>17510</appID>
+			<name>Age of Chivalry</name>
+			<logo>http://media.steampowered.com/steamcommunity/public/images/apps/17510/e3176ec058428d97a424af5d577bed96c6e92528.jpg</logo>
+			<storeLink>http://store.steampowered.com/app/17510</storeLink>
+			<hoursOnRecord>0.3</hoursOnRecord>
+			<statsLink>http://steamcommunity.com/id/lobati/stats/AgeOfChivalry</statsLink>
+			<globalStatsLink>http://steamcommunity.com/stats/AgeOfChivalry/achievements/</globalStatsLink>
+		</game>
+	</games>
+</gamesList>

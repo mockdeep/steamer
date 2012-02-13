@@ -10,10 +10,17 @@ describe Steamer do
       :content_type => 'application/xml',
     }
     FakeWeb.register_uri(:get, url, options)
-    @steamer = Steamer.new('lobati')
+    Steamer.any_instance.stub(:puts)
   end
 
   describe '#game_names' do
+    before :each do
+      Steamer.any_instance.
+        should_receive(:gets).
+        and_return('lobati')
+      @steamer = Steamer.new
+    end
+
     context 'given a valid steam_id' do
       it 'returns a sorted array of game names' do
         games = @steamer.game_names
@@ -23,6 +30,13 @@ describe Steamer do
   end
 
   describe '#games_and_ids' do
+    before :each do
+      Steamer.any_instance.
+        should_receive(:gets).
+        and_return('lobati')
+      @steamer = Steamer.new
+    end
+
     context 'given a valid steam_id' do
       it 'returns a sorted array of games and their store ids' do
         pairs = @steamer.games_and_ids
@@ -35,13 +49,116 @@ describe Steamer do
     end
   end
 
-  context 'on run' do
-    it 'looks for ~/.steamer'
+  describe '#initialize' do
+    context 'starting out' do
+      it 'loads the config file' do
+        Steamer.any_instance.should_receive(:load_config)
+        Steamer.new
+      end
+    end
+  end
 
+  describe '#load_config' do
+    context 'when the config file does not exist' do
+      it 'calls #set_up_new_user' do
+        File.should_receive(:exist?).and_return(false)
+        Steamer.any_instance.should_receive(:set_up_new_user)
+        Steamer.new
+      end
+    end
+  end
+
+  describe '#set_up_new_user' do
+    context 'when getting the user id' do
+      before :each do
+        Steamer.any_instance.should_receive(:puts).
+          with("Please enter your Steam profile id or custom url")
+        Steamer.any_instance.should_receive(:gets).and_return('poo')
+      end
+
+      it 'prompts the user for a steam id' do
+        steamer = Steamer.new
+      end
+
+      it 'parses the id' do
+        Steamer.any_instance.should_receive(:parse_id).with('poo')
+        steamer = Steamer.new
+      end
+    end
+  end
+
+  describe '#parse_id' do
+    context 'when given a vanity url' do
+      before :each do
+        Steamer.any_instance.
+          should_receive(:gets).
+          and_return('http://steamcommunity.com/id/pooper/')
+        @steamer = Steamer.new
+      end
+
+      it 'finds the username' do
+        @steamer.steam_id.should == 'pooper'
+      end
+
+      it 'sets the id_type to vanity' do
+        @steamer.id_type.should == :vanity
+      end
+    end
+
+    context 'when given a profile url' do
+      before :each do
+        Steamer.any_instance.
+          should_receive(:gets).
+          and_return('http://steamcommunity.com/profiles/76561198003000123/')
+        @steamer = Steamer.new
+      end
+
+      it 'finds the profile id' do
+        @steamer.steam_id.should == '76561198003000123'
+      end
+
+      it 'sets the id_type to profile' do
+        @steamer.id_type.should == :profile
+      end
+    end
+
+    context 'when given a profile id' do
+      before :each do
+        Steamer.any_instance.
+          should_receive(:gets).
+          and_return('76561198003000123')
+        @steamer = Steamer.new
+      end
+
+      it 'finds the profile id' do
+        @steamer.steam_id.should == '76561198003000123'
+      end
+
+      it 'sets the id_type to profile' do
+        @steamer.id_type.should == :profile
+      end
+    end
+
+    context 'when given a vanity id' do
+      before :each do
+        Steamer.any_instance.
+          should_receive(:gets).
+          and_return('pooper')
+        @steamer = Steamer.new
+      end
+
+      it 'finds the username' do
+        @steamer.steam_id.should == 'pooper'
+      end
+
+      it 'sets the id_type to vanity' do
+        @steamer.id_type.should == :vanity
+      end
+    end
+  end
+
+  context 'on run' do
     context 'when ~/.steamer is missing' do
-      it 'asks for a steam id'
-      it 'accepts a steam profile id'
-      it 'accepts a steam custom url'
       it 'gets list of steam games'
       it 'tries to locate user directory'
       it 'writes ~/.steamer'

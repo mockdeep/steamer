@@ -1,51 +1,95 @@
+require 'yaml'
+
 class Steamer
   include HTTParty
-  attr_reader :steam_id, :id_type
+  attr_accessor :steam_id, :steam_id_type, :games
 
-  def initialize
-    load_config
-  end
-
-  def game_names
-    games_and_ids.collect(&:first)
-  end
-
-  def games_and_ids
-    @games_and_ids ||= begin
-      url = "http://steamcommunity.com/id/#{@steam_id}/games/?xml=1"
-      response = self.class.get(url)
-      games_array = response.parsed_response['gamesList']['games']['game']
-      pairs = games_array.collect { |h| [ h['name'], h['appID'] ] }
-      pairs.sort { |a, b| a.first.downcase <=> b.first.downcase }
-    end
-  end
-
-  def load_config
+  def check(update = false)
     if File.exist?(File.join(File.expand_path('~'), '.steamer'))
-      puts 'yay!'
+      puts 'profile exists'
+      if update
+        load_config
+        download_games_list
+        write_config
+      end
+      true
     else
-      set_up_new_user
+      puts 'please enter your steam id'
+      parse_id(gets.chomp)
+      download_games_list
+      write_config
+      false
     end
   end
 
-  def set_up_new_user
-    puts 'Please enter your Steam profile id or custom url'
-    mystery_id = gets.chomp
-    parse_id(mystery_id)
+  def update
+    check(true)
   end
 
   def parse_id(mystery_id)
     case mystery_id
     when /steamcommunity\.com\/id\/(\w*)/
-      @steam_id = $1
-      @id_type = :vanity
+      self.steam_id = $1
+      self.steam_id_type = :vanity
     when /(\d{17})/
-      @steam_id = $1
-      @id_type = :profile
+      self.steam_id = $1
+      self.steam_id_type = :profile
     else
-      @steam_id = mystery_id
-      @id_type = :vanity
+      self.steam_id = mystery_id
+      self.steam_id_type = :vanity
     end
   end
 
+  def download_games_list
+    response = self.class.get(games_url).parsed_response
+    if response['response'] && response['response']['error'] =~ /could not be found/
+      abort('invalid steam profile')
+    else
+      puts 'games list downloaded'
+      self.games ||= {}
+      games_array = response['gamesList']['games']['game']
+      games_array.each do |game_hash|
+        game_name = game_hash['name']
+        self.games[game_name] ||= {}
+        if default_game = default_games[game_name]
+          self.games[game_name][:path] ||= default_game[:path]
+          self.games[game_name][:instructions] ||= default_game[:instructions]
+        else
+          self.games[game_name][:path] ||= nil
+          self.games[game_name][:instructions] ||= nil
+        end
+      end
+      self.games = Hash[games.sort]
+    end
+  end
+
+  def write_config
+    metadata = {
+      :steam_id => steam_id,
+      :steam_id_type => steam_id_type,
+      :games => games,
+    }
+    file = File.open(File.expand_path('~/.steamer'), 'w')
+    file.write(metadata.to_yaml)
+    file.close
+  end
+
+  def load_config
+  end
+
+  def games_url
+    case steam_id_type
+    when :vanity
+      url = "http://steamcommunity.com/id/#{steam_id}/games/?xml=1"
+    when :profile
+      url = "http://steamcommunity.com/profiles/#{steam_id}/games/?xml=1"
+    end
+  end
+
+  def default_games
+    @default_games ||= begin
+      yaml = File.read(File.dirname(File.expand_path(__FILE__)) + '/defaults.yml')
+      YAML.load(yaml)
+    end
+  end
 end

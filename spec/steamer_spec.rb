@@ -157,7 +157,8 @@ describe Steamer do
   describe '#download_games_list' do
     before :each do
       @steamer.stub(:puts)
-      @steamer.stub(:default_games).and_return(YAML.load(File.read('spec/fixtures/defaults.yml')))
+      yaml = YAML.load(File.read('spec/fixtures/defaults.yml'))
+      @steamer.stub(:default_games).and_return(yaml)
       @url = 'http://steamcommunity.com/id/lobati/games/?xml=1'
       @steamer.stub(:games_url).and_return(@url)
     end
